@@ -12,7 +12,7 @@ module.exports = () => {
         boorudl: "Download images from a Derpibooru tag",
         help: "Show this help message",
         musicdl: "Download music from various platforms",
-        autopush: "Commit and push Git repositories"
+        autopush: "Commit and push Git repositories",
     }
 
     let longest = Math.max(...Object.keys(list).map(i => i.length));

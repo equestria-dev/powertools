@@ -6,11 +6,13 @@ console.log("v" + require('./package.json').version + ", build " + BuildInfo.BUI
 console.log("");
 
 try {
-    if (!require('child_process').execSync("wget --version").toString().trim().startsWith("GNU Wget ")) {
+    if (!require('child_process').execSync("wget --version", { stdio: "pipe" }).toString().trim().startsWith("GNU Wget ")) {
         console.log(chalk.red("Error:") + " GNU Wget is not installed.");
+        return;
     }
 } catch (e) {
     console.log(chalk.red("Error:") + " GNU Wget is not installed.");
+    return;
 }
 
 let command = process.argv[2];
