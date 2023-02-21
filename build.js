@@ -1,1 +1,1 @@
-global.BuildInfo = JSON.parse(`{"BUILD":44,"DATE":"2023-02-21T13:07:05.964Z","SOURCE_USER":"raindrops@Izzy-Moonbow.local","SOURCE_DIR":"/Volumes/Unicorn/powertools","VERSION":"18.4.0"}`);
+global.BuildInfo = JSON.parse(`{"BUILD":48,"DATE":"2023-02-21T14:05:08.535Z","SOURCE_USER":"raindrops@Izzy-Moonbow.local","SOURCE_DIR":"/Volumes/Unicorn/powertools","VERSION":"18.4.0"}`);

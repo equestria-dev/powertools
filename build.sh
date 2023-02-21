@@ -24,3 +24,4 @@ pkg -t node18-win-arm64 -o ./bin/win32/arm64/pt -C GZip index.js
 pkg -t node18-win-x64 -o ./bin/win32/x64/pt -C GZip index.js
 pkg -t node18-macos-arm64 -o ./bin/mac/arm64/pt -C GZip index.js
 pkg -t node18-mac-x64 -o ./bin/mac/x64/pt -C GZip index.js
+cp ./bin/mac/arm64/pt ~/bin
