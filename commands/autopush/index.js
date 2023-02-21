@@ -23,7 +23,7 @@ module.exports = () => {
     }
 
     (async () => {
-        const version = "1.3";
+        const version = "1.3.1";
 
         const chalk = require('chalk');
         const prompts = require('prompts');
@@ -251,6 +251,8 @@ module.exports = () => {
                 process.stdout.write(chalk.gray("[" + file + "] ") + e.message.split("\n")[0]);
                 process.exit(1);
             }
+
+            process.stdout.write("\n");
         }
 
         console.log("");
