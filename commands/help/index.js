@@ -13,6 +13,7 @@ module.exports = () => {
         help: "Show this help message",
         musicdl: "Download music from various platforms",
         autopush: "Commit and push Git repositories",
+        ponybadge: "Install and update PonyBadge on Badger 2040W devices"
     }
 
     let longest = Math.max(...Object.keys(list).map(i => i.length));

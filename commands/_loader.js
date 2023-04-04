@@ -3,6 +3,7 @@ let _list = {
     boorudl: require('./boorudl/index'),
     help: require('./help/index'),
     version: require('./version/index'),
+    ponybadge: require('./ponybadge/index'),
 };
 
 try {
