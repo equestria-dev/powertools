@@ -4,9 +4,10 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
+    "micropython-ctl": "^1.13.4",
     "node-fetch": "^2.6.9",
     "prompts": "^2.4.2",
-    "systeminformation": "^5.17.9",
+    "systeminformation": "^5.17.12",
     "yargs": "^17.7.0"
   },
   "name": "powertools",
