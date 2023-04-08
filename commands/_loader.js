@@ -1,5 +1,6 @@
 let _list = {
     autopush: require('./autopush/index'),
+    backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
     help: require('./help/index'),
     version: require('./version/index'),
