@@ -21,9 +21,11 @@ let ignore = [
     "./Library/Caches",
     "./.gradle",
     "./.android",
-    "./.local/share/Trash"
+    "./.local/share/Trash",
+    "./.cargo"
 ];
 
+let currentCollectionSize = 0;
 let copySize = 0;
 let copiedSize = 0;
 let copiedSizeBefore = 0;
@@ -107,29 +109,41 @@ function copyFile(src, out) {
         currentCopiedSize = 0;
         currentFile = src;
 
-        fs.promises.lstat(src).then((stat) => {
-            if (stat.isDirectory()) {
-                fs.mkdirSync(out);
+        if (fs.existsSync(src)) {
+            fs.promises.lstat(src).then((stat) => {
+                if (stat.isDirectory()) {
+                    fs.mkdirSync(out);
+                    copiedFiles++;
+                    updateUI();
+                    res();
+                } else {
+                    currentFileSize = fs.lstatSync(src).size;
+                    const readStream = fs.createReadStream(src);
+                    const writeStream = fs.createWriteStream(out);
+
+                    readStream.on('data', function(chunk) {
+                        writeStream.write(chunk);
+                        copiedSize += chunk.length;
+                        currentCopiedSize += chunk.length;
+                        updateUI();
+                    });
+
+                    readStream.on('end', function() {
+                        readStream.close();
+                        writeStream.close();
+                        res();
+                    });
+                }
+            }).catch(() => {
                 copiedFiles++;
                 updateUI();
                 res();
-            } else {
-                currentFileSize = fs.lstatSync(src).size;
-                const readStream = fs.createReadStream(src);
-                const writeStream = fs.createWriteStream(out);
-
-                readStream.on('data', function(chunk) {
-                    writeStream.write(chunk);
-                    copiedSize += chunk.length;
-                    currentCopiedSize += chunk.length;
-                    updateUI();
-                });
-
-                readStream.on('end', function() {
-                    res();
-                });
-            }
-        })
+            });
+        } else {
+            copiedFiles++;
+            updateUI();
+            res();
+        }
     });
 }
 
@@ -159,21 +173,29 @@ function calculateSizeChange(size) {
 }
 
 async function collectFiles(directory, show, text) {
+    try {
+        fs.readdirSync(directory);
+    } catch (e) {
+        return;
+    }
+
     for (let file of fs.readdirSync(directory)) {
-        if (!(await fs.promises.lstat(directory + "/" + file)).isDirectory() && !(await fs.promises.lstat(directory + "/" + file)).isFile()) continue;
+        let stat = await fs.promises.lstat(directory + "/" + file);
+        if (!stat.isDirectory() && !stat.isFile()) continue;
+        currentCollectionSize += stat.size;
 
         if (ignore.includes(show + "/" + file) || file === ".DS_Store") continue;
 
         list.push({
             name: show + "/" + file,
-            directory: (await fs.promises.lstat(directory + "/" + file)).isDirectory()
+            directory: stat.isDirectory()
         });
 
         process.stdout.clearLine(null);
         process.stdout.cursorTo(0);
-        process.stdout.write("┣ " + text + " " + list.length);
+        process.stdout.write("┣ " + text + " " + list.length + " (" + formatSize(currentCollectionSize) + ")");
 
-        if ((await fs.promises.lstat(directory + "/" + file)).isDirectory()) {
+        if (stat.isDirectory()) {
             await collectFiles(directory + "/" + file, show + "/" + file, text);
         }
     }
@@ -184,7 +206,8 @@ let self = () => {
         absoluteSpeed = copiedSize - copiedSizeBefore;
         copiedSizeBefore = copiedSize;
 
-        speeds.push(absoluteSpeed);
+        speeds.unshift(absoluteSpeed);
+        speeds = speeds.splice(0, 600);
         speed = speeds.reduce((a, b) => a + b) / speeds.length;
 
         if (copying) updateUI();
@@ -242,6 +265,7 @@ let self = () => {
     let toCopy = [];
     let sizeChange = 0;
 
+    currentCollectionSize = 0;
     collectFiles(source, ".", "Collecting files from source...").then(() => {
         sourceFiles = list;
         list = [];
@@ -251,6 +275,7 @@ let self = () => {
         process.stdout.write("┃ " + chalk.green("Collected files from source"));
         process.stdout.moveCursor(0, 1);
 
+        currentCollectionSize = 0;
         collectFiles(target, ".", "Collecting files from target...").then(async () => {
             targetFiles = list;
             list = [];
@@ -287,16 +312,18 @@ let self = () => {
             for (let file of sourceFiles) {
                 let name = file.name;
 
-                if (targetFiles.map(i => i.name).includes(name)) {
-                    if (!(fs.lstatSync(source + "/" + name).mtimeMs <= fs.lstatSync(target + "/" + name).mtimeMs)) {
-                        sizeChange += fs.lstatSync(source + "/" + name).size - fs.lstatSync(target + "/" + name).size;
+                if (fs.existsSync(source + "/" + name)) {
+                    if (targetFiles.map(i => i.name).includes(name)) {
+                        if (!(fs.lstatSync(source + "/" + name).mtimeMs <= fs.lstatSync(target + "/" + name).mtimeMs)) {
+                            sizeChange += fs.lstatSync(source + "/" + name).size - fs.lstatSync(target + "/" + name).size;
+                            copySize += fs.lstatSync(source + "/" + name).isDirectory() ? 0 : fs.lstatSync(source + "/" + name).size;
+                            toCopy.push(name);
+                        }
+                    } else {
+                        sizeChange += fs.lstatSync(source + "/" + name).size;
                         copySize += fs.lstatSync(source + "/" + name).isDirectory() ? 0 : fs.lstatSync(source + "/" + name).size;
                         toCopy.push(name);
                     }
-                } else {
-                    sizeChange += fs.lstatSync(source + "/" + name).size;
-                    copySize += fs.lstatSync(source + "/" + name).isDirectory() ? 0 : fs.lstatSync(source + "/" + name).size;
-                    toCopy.push(name);
                 }
 
                 index2++;
