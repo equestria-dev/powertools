@@ -286,6 +286,9 @@ let self = () => {
             process.stdout.moveCursor(0, 1);
 
             let index = 0;
+            let lastPercentage = 0;
+            let lastPercentageDuration = 0;
+            let lastPercentageStart = new Date().getTime();
 
             for (let file of targetFiles) {
                 let name = file.name;
@@ -297,9 +300,21 @@ let self = () => {
 
                 index++;
 
+                let percentage = Math.round((index / sourceFiles.length) * 100);
+                if (percentage !== lastPercentage) {
+                    lastPercentageDuration = new Date().getTime() - lastPercentageStart;
+                    lastPercentageStart = new Date().getTime();
+                    lastPercentage = percentage;
+                }
+
                 process.stdout.clearLine(null);
                 process.stdout.cursorTo(0);
-                process.stdout.write("┣ Detecting deleted files... " +  + Math.round((index / targetFiles.length) * 100) + "%");
+
+                if (lastPercentageDuration > 0) {
+                    process.stdout.write("┣ Detecting deleted files... " + percentage + "%, " + formatETA(Math.round(lastPercentageDuration / 1000) * (100 - percentage)));
+                } else {
+                    process.stdout.write("┣ Detecting deleted files... " + percentage + "%");
+                }
             }
 
             process.stdout.cursorTo(0);
@@ -308,6 +323,9 @@ let self = () => {
             process.stdout.moveCursor(0, 1);
 
             let index2 = 0;
+            let lastPercentage2 = 0;
+            let lastPercentageDuration2 = 0;
+            let lastPercentageStart2 = new Date().getTime();
 
             for (let file of sourceFiles) {
                 let name = file.name;
@@ -328,9 +346,21 @@ let self = () => {
 
                 index2++;
 
+                let percentage = Math.round((index2 / sourceFiles.length) * 100);
+                if (percentage !== lastPercentage2) {
+                    lastPercentageDuration2 = new Date().getTime() - lastPercentageStart2;
+                    lastPercentageStart2 = new Date().getTime();
+                    lastPercentage2 = percentage;
+                }
+
                 process.stdout.clearLine(null);
                 process.stdout.cursorTo(0);
-                process.stdout.write("┣ Analysing directory... " + Math.round((index2 / sourceFiles.length) * 100) + "%");
+
+                if (lastPercentageDuration > 0) {
+                    process.stdout.write("┣ Analysing directory... " + percentage + "%, " + formatETA(Math.round(lastPercentageDuration / 1000) * (100 - percentage)));
+                } else {
+                    process.stdout.write("┣ Analysing directory... " + percentage + "%");
+                }
             }
 
             process.stdout.cursorTo(0);
