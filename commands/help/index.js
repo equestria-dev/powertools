@@ -9,6 +9,7 @@ module.exports = () => {
 
     let docs = {
         version: "Show the Power Tools version",
+        update: "Update Power Tools to the latest version",
         boorudl: "Download images from a Derpibooru tag",
         help: "Show this help message",
         musicdl: "Download music from various platforms",

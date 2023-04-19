@@ -3,25 +3,23 @@ rm -rf ./bin
 node buildgen.js
 
 mkdir -p ./bin
-mkdir -p ./bin/linux/glibc/x64
-mkdir -p ./bin/linux/glibc/arm64
-mkdir -p ./bin/linux/musl/arm64
-mkdir -p ./bin/linux/musl/x64
-mkdir -p ./bin/linux/static/x64
-mkdir -p ./bin/linux/static/arm64
+mkdir -p ./bin/linux/x64
+mkdir -p ./bin/linux/arm64
 mkdir -p ./bin/mac/arm64
 mkdir -p ./bin/mac/x64
 mkdir -p ./bin/win32/x64
 mkdir -p ./bin/win32/arm64
 
-pkg -t node18-linux-arm64 -o ./bin/linux/glibc/arm64/pt -C GZip index.js
-pkg -t node18-linux-x64 -o ./bin/linux/glibc/x64/pt -C GZip index.js
-pkg -t node18-linuxstatic-arm64 -o ./bin/linux/static/arm64/pt -C GZip index.js
-pkg -t node18-linuxstatic-x64 -o ./bin/linux/static/x64/pt -C GZip index.js
-pkg -t node18-alpine-arm64 -o ./bin/linux/musl/arm64/pt -C GZip index.js
-pkg -t node18-alpine-x64 -o ./bin/linux/musl/x64/pt -C GZip index.js
-pkg -t node18-win-arm64 -o ./bin/win32/arm64/pt -C GZip index.js
+pkg -t node18-linuxstatic-arm64 -o ./bin/linux/arm64/pt -C GZip index.js
+pkg -t node18-linuxstatic-x64 -o ./bin/linux/x64/pt -C GZip index.js
 pkg -t node18-win-x64 -o ./bin/win32/x64/pt -C GZip index.js
 pkg -t node18-macos-arm64 -o ./bin/mac/arm64/pt -C GZip index.js
-pkg -t node18-mac-x64 -o ./bin/mac/x64/pt -C GZip index.js
+
 cp ./bin/mac/arm64/pt ~/bin
+
+node buildcontrol.js
+
+scp ./bin/linux/arm64/pt zephyrheights:/pool/web/cdn/powertools/release-linux-arm64.bin
+scp ./bin/linux/x64/pt zephyrheights:/pool/web/cdn/powertools/release-linux-x64.bin
+scp ./bin/mac/arm64/pt zephyrheights:/pool/web/cdn/powertools/release-darwin-arm64.bin
+scp ./build.json zephyrheights:/pool/web/cdn/powertools/build.json

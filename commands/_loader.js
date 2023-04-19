@@ -3,13 +3,14 @@ let _list = {
     backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
     help: require('./help/index'),
+    update: require('./update/index'),
     version: require('./version/index'),
 };
 
-try {
+/*try {
     _list.musicdl = require('./musicdl/index');
 } catch (e) {
     _list.musicdl = null;
-}
+}*/
 
 module.exports = _list;
