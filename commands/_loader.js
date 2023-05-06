@@ -7,10 +7,10 @@ let _list = {
     version: require('./version/index'),
 };
 
-/*try {
+try {
     _list.musicdl = require('./musicdl/index');
 } catch (e) {
     _list.musicdl = null;
-}*/
+}
 
 module.exports = _list;

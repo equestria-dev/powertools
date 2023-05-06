@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const commands = require("./commands/_loader");
 
 console.log("Equestria.dev Power Tools");
-console.log("v" + require('./package.json').version + ", build " + BuildInfo.BUILD);
+console.log("build " + BuildInfo.BUILD + ", " + new Date(BuildInfo.DATE).toISOString().split("T")[0]);
 console.log("");
 
 try {
