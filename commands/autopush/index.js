@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 module.exports = () => {
     const child_process = require('node:child_process');
 
@@ -52,22 +53,24 @@ module.exports = () => {
         });
 
         for (let file of list) {
-            process.stdout.write(chalk.gray("[" + file + "] ") + "Initialising...")
+            let name = fs.existsSync("./" + file + "/.idea/.name") ? fs.readFileSync("./" + file + "/.idea/.name").toString().trim() : file;
+
+            process.stdout.write(chalk.gray("[" + name + "] ") + "Initialising...")
             let root = fs.realpathSync("./" + file);
 
             try {
                 if (fs.existsSync(root + "/.git")) {
                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                    process.stdout.write(chalk.gray("[" + file + "] ") + "Adding files...");
+                    process.stdout.write(chalk.gray("[" + name + "] ") + "Adding files...");
                     await exec("git", ["add", "-A"], { cwd: root });
 
                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                    process.stdout.write(chalk.gray("[" + file + "] ") + "Generating commit message...");
+                    process.stdout.write(chalk.gray("[" + name + "] ") + "Generating commit message...");
                     let changes = child_process.execSync("git status --porcelain", {cwd: root}).toString().trim();
 
                     if (changes === "") {
                         process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                        process.stdout.write(chalk.gray("[" + file + "] ") + "No changes since last commit");
+                        process.stdout.write(chalk.gray("[" + name + "] ") + "No changes since last commit");
                     } else {
                         let changed = changes.split("\n").map(i => i.trim().replace(/ +/g, " ").split(" ")[0].substring(0, 1));
                         let amounts = {};
@@ -127,15 +130,15 @@ module.exports = () => {
                         message += " (automated)";
 
                         process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                        process.stdout.write(chalk.gray("[" + file + "] ") + "Making commit...");
+                        process.stdout.write(chalk.gray("[" + name + "] ") + "Making commit...");
                         await exec("git", ["commit", "-m", message], { cwd: root });
 
                         process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                        process.stdout.write(chalk.gray("[" + file + "] ") + "Pushing to remote...");
+                        process.stdout.write(chalk.gray("[" + name + "] ") + "Pushing to remote...");
                         await exec("git", ["push", "--all", "--force", "origin"], { cwd: root });
 
                         process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                        process.stdout.write(chalk.gray("[" + file + "] ") + "Completed");
+                        process.stdout.write(chalk.gray("[" + name + "] ") + "Completed");
                     }
                 } else {
                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
@@ -150,7 +153,7 @@ module.exports = () => {
                                 type: 'select',
                                 name: 'value',
                                 hint: 'What should be done?',
-                                message: chalk.bold(file) + " does not contain a Git repository",
+                                message: chalk.bold(name) + " does not contain a Git repository",
                                 choices: [
                                     { title: "Ignore this project", value: "ignore" },
                                     { title: "Create a new repository", value: "create" },
@@ -168,14 +171,14 @@ module.exports = () => {
                             case "ignore":
                                 completed = true;
                                 process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                process.stdout.write(chalk.gray("[" + file + "] ") + "No Git repository");
+                                process.stdout.write(chalk.gray("[" + name + "] ") + "No Git repository");
                                 break;
 
                             case "archive":
                                 fs.renameSync("./" + file, "./._/" + file);
                                 completed = true;
                                 process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                process.stdout.write(chalk.gray("[" + file + "] ") + "Moved to archive");
+                                process.stdout.write(chalk.gray("[" + name + "] ") + "Moved to archive");
                                 break;
 
                             case "create":
@@ -189,31 +192,31 @@ module.exports = () => {
 
                                 try {
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Initialising repository...");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Initialising repository...");
                                     await exec("git", ["init"], { cwd: root });
 
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Adding files...");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Adding files...");
                                     await exec("git", ["add", "-A"], { cwd: root });
 
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Making commit...");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Making commit...");
                                     await exec("git", ["commit", "-m", "Initial commit"], { cwd: root });
 
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Adding remote...");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Adding remote...");
                                     await exec("git", ["remote", "add", "origin", response2.value], { cwd: root });
 
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Pushing to remote...");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Pushing to remote...");
                                     await exec("git", ["push", "--all", "origin"], { cwd: root })
 
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Completed");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Completed");
                                     completed = true;
                                 } catch (e) {
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + e.message);
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + e.message);
                                     completed = true;
                                 }
 
@@ -233,7 +236,7 @@ module.exports = () => {
                                     completed = true;
                                     fs.rmSync(root, { recursive: true });
                                     process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                    process.stdout.write(chalk.gray("[" + file + "] ") + "Deleted project");
+                                    process.stdout.write(chalk.gray("[" + name + "] ") + "Deleted project");
                                 }
 
                                 break;
@@ -241,14 +244,14 @@ module.exports = () => {
                             case "quit":
                                 completed = true;
                                 process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                                process.stdout.write(chalk.gray("[" + file + "] ") + "No Git repository");
+                                process.stdout.write(chalk.gray("[" + name + "] ") + "No Git repository");
                                 process.exit(1);
                         }
                     }
                 }
             } catch (e) {
                 process.stdout.cursorTo(0); process.stdout.clearLine(null);
-                process.stdout.write(chalk.gray("[" + file + "] ") + e.message.split("\n")[0]);
+                process.stdout.write(chalk.gray("[" + name + "] ") + e.message.split("\n")[0]);
                 process.exit(1);
             }
 
