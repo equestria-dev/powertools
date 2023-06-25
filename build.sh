@@ -15,8 +15,6 @@ pkg -t node18-linuxstatic-x64 -o ./bin/linux/x64/pt -C GZip index.js
 pkg -t node18-win-x64 -o ./bin/win32/x64/pt -C GZip index.js
 pkg -t node18-macos-arm64 -o ./bin/mac/arm64/pt -C GZip index.js
 
-cp ./bin/mac/arm64/pt ~/bin
-
 node buildcontrol.js
 
 scp ./bin/linux/arm64/pt zephyrheights:/pool/web/cdn/powertools/release-linux-arm64.bin

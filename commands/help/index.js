@@ -14,7 +14,8 @@ module.exports = () => {
         help: "Show this help message",
         musicdl: "Download music from various platforms",
         autopush: "Commit and push Git repositories",
-        backup: "Backup any directory elsewhere"
+        backup: "Backup any directory elsewhere",
+        iconer: "Add icons to IntelliJ projects"
     }
 
     let longest = Math.max(...Object.keys(list).map(i => i.length));

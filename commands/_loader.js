@@ -3,6 +3,8 @@ let _list = {
     backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
     help: require('./help/index'),
+    iconer: require('./iconer/index'),
+    musicdl: null,
     update: require('./update/index'),
     version: require('./version/index'),
 };

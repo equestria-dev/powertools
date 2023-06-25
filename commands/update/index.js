@@ -70,6 +70,7 @@ module.exports = async () => {
                 }
 
                 if (fs.existsSync(tmp + "/package.bin")) fs.rmSync(tmp + "/package.bin");
+                if (fs.existsSync(tmp)) fs.rmSync(tmp, { recursive: true });
             } else {
                 console.log("This update is not available for your platform (" + platform + ").");
             }
