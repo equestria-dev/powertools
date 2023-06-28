@@ -62,8 +62,12 @@ module.exports = async () => {
                         }
 
                         fs.chmodSync(process.argv[0], 0o755);
+                        fs.rmSync(process.argv[0] + ".old");
+                        return;
                     }
 
+                    fs.rmSync(tmp + "/package.bin");
+                    console.log("The update has been installed successfully.");
                     fs.rmSync(tmp + "/package.bin");
                 } else {
                     console.log("Failed to verify update:\n    Expected: " + update.control[platform] + "\n    Found: " + localControl);
