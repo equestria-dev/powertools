@@ -18,7 +18,7 @@ module.exports = async (inUpdate) => {
 
     try {
         console.log(inUpdate ? "Fetching update..." : "Checking for updates...");
-        let update = await (await fetchWithTimeout("https://static.equestria.horse/powertools/build.json")).json();
+        let update = await (await fetchWithTimeout("https://cdn.equestria.dev/powertools/build.json")).json();
         let latestBuild = update.properties.BUILD;
         let currentBuild = BuildInfo.BUILD;
 

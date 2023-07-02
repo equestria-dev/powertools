@@ -22,7 +22,7 @@ module.exports = async () => {
 
     if (typeof hasUpdates === "boolean") {
         if (hasUpdates) {
-            let update = await (await fetchWithTimeout("https://static.equestria.horse/powertools/build.json")).json();
+            let update = await (await fetchWithTimeout("https://cdn.equestria.dev/powertools/build.json")).json();
             let platform = os.platform() + "-" + os.arch();
 
             if (update.versions[platform]) {
