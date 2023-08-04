@@ -8,6 +8,7 @@ module.exports = () => {
     let list = require('../_loader');
 
     let docs = {
+        derpilist: "Saves a list of search results from Derpibooru",
         version: "Show the Power Tools version",
         update: "Update Power Tools to the latest version",
         boorudl: "Download images from a Derpibooru tag",

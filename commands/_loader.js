@@ -2,6 +2,7 @@ let _list = {
     autopush: require('./autopush/index'),
     backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
+    derpilist: require('./derpilist/index'),
     help: require('./help/index'),
     iconer: require('./iconer/index'),
     musicdl: null,
