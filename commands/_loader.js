@@ -3,6 +3,7 @@ let _list = {
     backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
     derpilist: require('./derpilist/index'),
+    derpisync: require('./derpisync/index'),
     help: require('./help/index'),
     iconer: require('./iconer/index'),
     musicdl: null,

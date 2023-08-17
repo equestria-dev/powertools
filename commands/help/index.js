@@ -9,6 +9,7 @@ module.exports = () => {
 
     let docs = {
         derpilist: "Saves a list of search results from Derpibooru",
+        derpisync: "Syncs your Derpibooru favorites with a local copy",
         version: "Show the Power Tools version",
         update: "Update Power Tools to the latest version",
         boorudl: "Download images from a Derpibooru tag",

@@ -66,15 +66,15 @@ module.exports = async () => {
                         return;
                     }
 
-                    fs.rmSync(tmp + "/package.bin");
+                    try { if (fs.existsSync(tmp + "/package.bin")) fs.rmSync(tmp + "/package.bin"); } catch (e) {}
                     console.log("The update has been installed successfully.");
-                    fs.rmSync(tmp + "/package.bin");
+                    try { if (fs.existsSync(tmp + "/package.bin")) fs.rmSync(tmp + "/package.bin"); } catch (e) {}
                 } else {
                     console.log("Failed to verify update:\n    Expected: " + update.control[platform] + "\n    Found: " + localControl);
                 }
 
-                if (fs.existsSync(tmp + "/package.bin")) fs.rmSync(tmp + "/package.bin");
-                if (fs.existsSync(tmp)) fs.rmSync(tmp, { recursive: true });
+                try { if (fs.existsSync(tmp + "/package.bin")) fs.rmSync(tmp + "/package.bin"); } catch (e) {}
+                try { if (fs.existsSync(tmp)) fs.rmSync(tmp, { recursive: true }); } catch (e) {}
             } else {
                 console.log("This update is not available for your platform (" + platform + ").");
             }
