@@ -18,7 +18,7 @@ module.exports = () => {
         let username = fs.readFileSync(os.homedir() + "/.derpisync").toString().trim();
         let total = (await (await fetch("https://derpibooru.org/api/v1/json/search/images?filter_id=56027&page=1&per_page=1&q=" + encodeURIComponent("faved_by:" + username))).json())['total'];
         let images = 0;
-        let pages = Math.floor(total / 50);
+        let pages = Math.ceil(total / 50);
 
         console.log(total + " images to download from " + username + ", part of " + pages + " pages");
 
