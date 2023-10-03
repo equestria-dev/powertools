@@ -2,6 +2,7 @@ let _list = {
     autopush: require('./autopush/index'),
     backup: require('./backup/index'),
     boorudl: require('./boorudl/index'),
+    deploy: require('./deploy/index'),
     derpilist: require('./derpilist/index'),
     derpisync: require('./derpisync/index'),
     help: require('./help/index'),

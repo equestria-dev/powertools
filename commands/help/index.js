@@ -8,6 +8,7 @@ module.exports = () => {
     let list = require('../_loader');
 
     let docs = {
+        deploy: "Deploy a package to the Equestria.dev package repository",
         derpilist: "Saves a list of search results from Derpibooru",
         derpisync: "Syncs your Derpibooru favorites with a local copy",
         version: "Show the Power Tools version",
