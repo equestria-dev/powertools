@@ -37,8 +37,79 @@ function timeToString(time) {
 }
 
 module.exports = () => {
+    function updateScreen() {
+        let fetchEta = (totalPages - totalPageNumber) * (times.reduce((a, b) => a + b, 0) / times.length);
+        let str = "Fetching: " + Math.round((totalPageNumber / totalPages) * 100) + "% (" + totalPageNumber + "/" + totalPages + ") complete" + (times.length > 10 ? ", " + timeToString(fetchEta) : "") + " (" + totalPrelistFull.length + ")";
+
+        if (global.images > 0) {
+            let eta = (totalImages - times2.length) * (times2.reduce((a, b) => a + b, 0) / times2.length) + (fetchEta > 1000 ? fetchEta : 0);
+
+            if (doneFetching) {
+                str = "Downloading: " + Math.round((images / totalImages) * 100) + "% (" + images + "/" + totalImages + ") complete" + (times2.length > 10 && eta > 1000 ? ", " + timeToString(eta) : "") + " (" + lastImage['id'].toString() + ")";
+            } else {
+                str += " | Downloading: " + Math.round((images / totalImages) * 100) + "% (" + images + "/" + totalImages + ") complete" + (times2.length > 10 && eta > 1000 ? ", " + timeToString(eta) : "") + " (" + lastImage['id'].toString() + ")";
+            }
+        }
+
+        process.stdout.cursorTo(0);
+        str = str.substring(0, process.stdout.columns - 1);
+        process.stdout.write(str + " ".repeat(process.stdout.columns - str.length - 1));
+    }
+
+    async function downloadNextImage() {
+        let image = totalPrelist[0];
+        global.lastImage = image;
+        let start = new Date();
+
+        let path1 = (image['sha512_hash'] ?? image['orig_sha512_hash'] ?? "0000000").substring(0, 1);
+        let path2 = (image['sha512_hash'] ?? image['orig_sha512_hash'] ?? "0000000").substring(0, 2);
+
+        if (!fs.existsSync("./images/" + path1)) fs.mkdirSync("./images/" + path1);
+        if (!fs.existsSync("./images/" + path1 + "/" + path2)) fs.mkdirSync("./images/" + path1 + "/" + path2);
+        if (!fs.existsSync("./thumbnails/" + path1)) fs.mkdirSync("./thumbnails/" + path1);
+        if (!fs.existsSync("./thumbnails/" + path1 + "/" + path2)) fs.mkdirSync("./thumbnails/" + path1 + "/" + path2);
+
+        if (!fs.existsSync("./images/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['view_url'])) || !fs.existsSync("./thumbnails/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['representations']['thumb']))) {
+            if (fs.existsSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']))) fs.unlinkSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']));
+            if (fs.existsSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']))) fs.unlinkSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']));
+            fs.writeFileSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']), Buffer.from(await (await fetch(image['view_url'])).arrayBuffer()));
+            fs.writeFileSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']), Buffer.from(await (await fetch(image['representations']['thumb'])).arrayBuffer()));
+
+            fs.renameSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']), "./thumbnails/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['representations']['thumb']));
+            fs.renameSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']), "./images/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['view_url']));
+        }
+
+        times2.push(new Date().getTime() - start);
+        totalPrelist.shift();
+        global.images++;
+
+        updateScreen();
+        downloadLoop();
+    }
+
+    function downloadLoop() {
+        setTimeout(async () => {
+            if (typeof totalPrelist === "undefined") {
+                downloadLoop();
+                return;
+            }
+
+            if (totalPrelist[0]) {
+                await downloadNextImage();
+            } else if (totalPrelistFull.length > 0 && global.images >= totalPrelistFull.length && doneFetching) {
+                process.stdout.clearLine();
+                process.stdout.cursorTo(0);
+                process.stdout.write("All done!\n");
+                process.exit(0);
+            } else {
+                downloadLoop();
+            }
+        });
+    }
+
     (async () => {
-        let listFull = [];
+        global.doneFetching = false;
+        downloadLoop();
 
         if (!fs.existsSync(os.homedir() + "/.derpisync")) {
             console.log("Please add your Derpibooru API key to " + os.homedir() + "/.derpisync and try again.");
@@ -60,55 +131,89 @@ module.exports = () => {
         let pages4 = Math.ceil(total4 / 50);
         let pages5 = Math.ceil(total5 / 50);
 
-        let images = 0;
-        let types = [
-            {
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+
+        let types = [];
+
+        if (!process.argv[2] || process.argv[2] === "faves") {
+            types.push({
                 query: "my:faves",
-                name: "favorites",
+                name: "faved",
                 pages: pages1,
                 total: total1
-            },
-            {
+            });
+        }
+
+        if (!process.argv[2] || process.argv[2] === "upvotes") {
+            types.push({
                 query: "my:upvotes",
                 name: "upvotes",
-                pages: pages1,
-                total: total1
-            },
-            {
+                pages: pages2,
+                total: total2
+            });
+        }
+
+        if (!process.argv[2] || process.argv[2] === "downvotes") {
+            types.push({
                 query: "my:downvotes",
                 name: "downvotes",
-                pages: pages1,
-                total: total1
-            },
-            {
+                pages: pages3,
+                total: total3
+            });
+        }
+
+        if (!process.argv[2] || process.argv[2] === "watched") {
+            types.push({
                 query: "my:watched",
                 name: "watched",
-                pages: pages1,
-                total: total1
-            },
-            {
+                pages: pages4,
+                total: total4
+            });
+        }
+
+        if (!process.argv[2] || process.argv[2] === "uploads") {
+            types.push({
                 query: "my:uploads",
                 name: "uploads",
-                pages: pages1,
-                total: total1
-            }
-        ];
+                pages: pages5,
+                total: total5
+            });
+        }
 
         let prelists = {};
-        let totalPrelist = [];
-        let times = [];
-        let totalPages = pages1 + pages2 + pages3 + pages4 + pages5;
-        let totalImages = total1 + total2 + total3 + total4 + total5;
-        let totalPageNumber = 0;
+        global.totalPrelist = [];
+        global.totalPrelistFull = [];
+        global.times = [];
+        global.times2 = [];
+        global.totalPages = types.map(i => i['pages']).reduce((a, b) => a + b);
+        global.totalImages = types.map(i => i['total']).reduce((a, b) => a + b);
+        global.totalPageNumber = 0;
+        global.images = 0;
 
-        if (total1 + total2 + total3 + total4 + total5 > 150000) {
+        if (totalImages > 150000) {
             console.log("");
-            console.log("Error: There are over 150000 images to save, which is unsupported. Please remove " + ((total1 + total2 + total3 + total4 + total5) - 150000) + " images and try again.");
-            return;
-        } else {
-            console.log("");
-            console.log((total1 + total2 + total3 + total4 + total5) + " images to download from your Derpibooru account, part of " + (pages1 + pages2 + pages3 + pages4 + pages5) + " pages");
+            console.log("Warning: There are over 150000 images to save, so only the first 150000 will be saved. Please remove " + ((total1 + total2 + total3 + total4 + total5) - 150000) + " images and try again.");
+            global.totalImages = 150000;
+
+            types = types.map(i => {
+                if (i['pages'] > 600) {
+                    i["pages"] = 600;
+                    i["total"] = 30000;
+                }
+
+                return i;
+            });
+
+            global.totalPages = types.map(i => i['pages']).reduce((a, b) => a + b);
         }
+
+        console.log("");
+        console.log(totalImages + " images to download from your Derpibooru account, part of " + totalPages + " pages");
 
         for (let type of types) {
             let prelist = [];
@@ -116,77 +221,42 @@ module.exports = () => {
 
             for (let pageNumber = 1; pageNumber <= pages + 1; pageNumber++) {
                 let start = new Date();
+                let tryFetch = true;
+                let page;
 
-                let str = "Fetching images list: " + Math.round((totalPageNumber / totalPages) * 100) + "% complete" + (times.length > 10 ? ", " + timeToString((totalPages - totalPageNumber) * (times.reduce((a, b) => a + b) / times.length)) : "");
-                process.stdout.cursorTo(0);
-                process.stdout.write(str + " ".repeat(process.stdout.columns - str.length - 1));
+                while (tryFetch) {
+                    try {
+                        page = await (await fetch("https://derpibooru.org/api/v1/json/search/images?filter_id=56027&key=" + username + "&page=" + pageNumber + "&per_page=50&q=" + encodeURIComponent(type.query))).json();
+                        page['images'] = page['images'].map((image) => {
+                            if (image['representations']['thumb'].endsWith(".mp4") || image['representations']['thumb'].endsWith(".webm")) {
+                                image['representations']['thumb'] = image['representations']['thumb'].substring(0, image['representations']['thumb'].length - path.extname(image['representations']['thumb']).length) + ".gif";
+                            }
 
-                let page = await (await fetch("https://derpibooru.org/api/v1/json/search/images?filter_id=56027&key=" + username + "&page=" + pageNumber + "&per_page=50&q=" + encodeURIComponent(type.query))).json();
+                            return image;
+                        });
+
+                        tryFetch = false;
+                    } catch (e) {
+                        await sleep(1000);
+                    }
+                }
+
                 prelist.push(...page['images']);
-                await sleep(700);
+                totalPrelist.push(...page['images']);
+                totalPrelistFull.push(...page['images']);
+                await sleep(1000);
                 times.push(new Date().getTime() - start);
 
-                totalPageNumber++;
+                updateScreen();
+
+                global.totalPageNumber++;
             }
 
-            totalPrelist.push(...prelist);
+            fs.writeFileSync("./" + type.name + ".pdsdb", zlib.deflateRawSync(JSON.stringify(prelist)));
             prelists[type.name] = prelist;
         }
 
-        times = [];
-
-        for (let type of types) {
-            let list = [];
-            let prelist = prelists[type.name];
-
-            for (let image of prelist) {
-                let start = new Date();
-
-                let str = "Downloading images: " + Math.round((images / totalPrelist.length) * 100) + "% complete" + (times.length > 10 ? ", " + timeToString((totalPrelist.length - times.length) * (times.reduce((a, b) => a + b) / times.length)) : "") + " (" + image['id'].toString() + ")";
-                process.stdout.cursorTo(0);
-                process.stdout.write(str + " ".repeat(process.stdout.columns - str.length - 1));
-
-                if (image['representations']['thumb'].endsWith(".mp4") || image['representations']['thumb'].endsWith(".webm")) {
-                    image['representations']['thumb'] = image['representations']['thumb'].substring(0, image['representations']['thumb'].length - path.extname(image['representations']['thumb']).length) + ".gif";
-                }
-
-                list.push(image);
-
-                let path1 = image['sha512_hash'].substring(0, 1);
-                let path2 = image['sha512_hash'].substring(0, 2);
-
-                if (!fs.existsSync("./images/" + path1)) fs.mkdirSync("./images/" + path1);
-                if (!fs.existsSync("./images/" + path1 + "/" + path2)) fs.mkdirSync("./images/" + path1 + "/" + path2);
-                if (!fs.existsSync("./thumbnails/" + path1)) fs.mkdirSync("./thumbnails/" + path1);
-                if (!fs.existsSync("./thumbnails/" + path1 + "/" + path2)) fs.mkdirSync("./thumbnails/" + path1 + "/" + path2);
-
-                if (!fs.existsSync("./images/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['view_url'])) || !fs.existsSync("./thumbnails/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['representations']['thumb']))) {
-                    if (fs.existsSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']))) fs.unlinkSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']));
-                    if (fs.existsSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']))) fs.unlinkSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']));
-                    fs.writeFileSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']), Buffer.from(await (await fetch(image['view_url'])).arrayBuffer()));
-                    fs.writeFileSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']), Buffer.from(await (await fetch(image['representations']['thumb'])).arrayBuffer()));
-
-                    fs.renameSync("./thumbnails/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['representations']['thumb']), "./thumbnails/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['representations']['thumb']));
-                    fs.renameSync("./images/" + path1 + "/" + path2 + "/." + image['id'] + path.extname(image['view_url']), "./images/" + path1 + "/" + path2 + "/" + image['id'] + path.extname(image['view_url']));
-                }
-
-                times.push(new Date().getTime() - start);
-                images++;
-            }
-
-            for (let item of list) {
-                if (!listFull.map(i => i.id).includes(item.id)) {
-                    listFull.push(item);
-                }
-            }
-
-            fs.writeFileSync("./" + type.name + ".pdsdb", zlib.deflateRawSync(JSON.stringify(list)));
-        }
-
-        fs.writeFileSync("./list.pdsdb", zlib.deflateRawSync(JSON.stringify(listFull)));
-
-        process.stdout.clearLine();
-        process.stdout.cursorTo(0);
-        process.stdout.write("All done!\n");
+        fs.writeFileSync("./list.pdsdb", zlib.deflateRawSync(JSON.stringify(totalPrelistFull)));
+        global.doneFetching = true;
     })();
 }

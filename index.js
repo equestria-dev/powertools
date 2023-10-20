@@ -8,12 +8,10 @@ console.log("");
 
 try {
     if (!require('child_process').execSync("wget --version", { stdio: "pipe" }).toString().trim().startsWith("GNU Wget ")) {
-        console.log(chalk.red("Error:") + " GNU Wget is not installed.");
-        return;
+        console.log(chalk.yellow("Warning:") + " GNU Wget is not installed, some features (such as over-the-air updates) will not be functional.");
     }
 } catch (e) {
-    console.log(chalk.red("Error:") + " GNU Wget is not installed.");
-    return;
+    console.log(chalk.yellow("Warning:") + " GNU Wget is not installed, some features (such as over-the-air updates) will not be functional.");
 }
 
 require('./updater')().then(() => {

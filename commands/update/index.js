@@ -3,6 +3,7 @@ const os = require("os");
 const child_process = require("child_process");
 const fs = require('fs');
 const crypto = require("crypto");
+const chalk = require("chalk");
 
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 5000 } = options;
@@ -19,6 +20,16 @@ async function fetchWithTimeout(resource, options = {}) {
 
 module.exports = async () => {
     let hasUpdates = await require('../../updater')(true);
+
+    try {
+        if (!require('child_process').execSync("wget --version", { stdio: "pipe" }).toString().trim().startsWith("GNU Wget ")) {
+            console.log(chalk.red("Error:") + " GNU Wget is not installed, over-the-air updates are disabled.");
+            return;
+        }
+    } catch (e) {
+        console.log(chalk.red("Error:") + " GNU Wget is not installed, over-the-air updates are disabled.");
+        return;
+    }
 
     if (typeof hasUpdates === "boolean") {
         if (hasUpdates) {
