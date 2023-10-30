@@ -195,21 +195,17 @@ module.exports = () => {
         global.totalPageNumber = 0;
         global.images = 0;
 
-        if (totalImages > 150000) {
-            console.log("");
-            console.log("Warning: There are over 150000 images to save, so only the first 150000 will be saved. Please remove " + ((total1 + total2 + total3 + total4 + total5) - 150000) + " images and try again.");
-            global.totalImages = 150000;
+        for (let type of types) {
+            if (type['total'] > 150000) {
+                console.log("");
+                console.log("Warning: There are over 150000 images to save in " + type.name + ", so only the first 150000 " + type.name + " will be saved. Please remove " + (type['total'] - 150000) + " images and try again.");
 
-            types = types.map(i => {
-                if (i['pages'] > 600) {
-                    i["pages"] = 600;
-                    i["total"] = 30000;
-                }
+                type["pages"] = 3000;
+                type["total"] = 150000;
 
-                return i;
-            });
-
-            global.totalPages = types.map(i => i['pages']).reduce((a, b) => a + b);
+                global.totalPages = types.map(i => i['pages']).reduce((a, b) => a + b);
+                global.totalImages = types.map(i => i['total']).reduce((a, b) => a + b);
+            }
         }
 
         console.log("");
@@ -256,7 +252,6 @@ module.exports = () => {
             prelists[type.name] = prelist;
         }
 
-        fs.writeFileSync("./list.pdsdb", zlib.deflateRawSync(JSON.stringify(totalPrelistFull)));
         global.doneFetching = true;
     })();
 }
