@@ -37,6 +37,9 @@ function timeToString(time) {
 }
 
 module.exports = () => {
+    console.log("Updating a Prisbeam database is now done directly inside of Prisbeam. Please open Prisbeam, load your current database, and go to Options > Update database from Derpibooru.");
+    process.exit(1);
+
     function updateScreen() {
         let fetchEta = (totalPages - totalPageNumber) * (times.reduce((a, b) => a + b, 0) / times.length);
         let str = "Fetching: " + Math.round((totalPageNumber / totalPages) * 100) + "% (" + totalPageNumber + "/" + totalPages + ") complete" + (times.length > 10 ? ", " + timeToString(fetchEta) : "") + " (" + totalPrelistFull.length + ")";
