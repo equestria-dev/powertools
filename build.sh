@@ -19,10 +19,15 @@ pkg -t node18-macos-x64 -o ./bin/mac/x64/pt -C GZip index.js
 
 node buildcontrol.js
 
-rsync --progress ./bin/linux/arm64/pt zephyrheights:/pool/web/cdn/powertools/release-linux-arm64.bin
-rsync --progress ./bin/linux/x64/pt zephyrheights:/pool/web/cdn/powertools/release-linux-x64.bin
-rsync --progress ./bin/mac/arm64/pt zephyrheights:/pool/web/cdn/powertools/release-darwin-arm64.bin
-rsync --progress ./bin/mac/x64/pt zephyrheights:/pool/web/cdn/powertools/release-darwin-x64.bin
-rsync --progress ./bin/win32/arm64/pt.exe zephyrheights:/pool/web/cdn/powertools/release-win32-arm64.bin
-rsync --progress ./bin/win32/x64/pt.exe zephyrheights:/pool/web/cdn/powertools/release-win32-x64.bin
-rsync --progress ./build.json zephyrheights:/pool/web/cdn/powertools/build.json
+rm -rf ./upload
+mkdir ./upload
+cp ./bin/linux/arm64/pt ./upload/release-linux-arm64.bin
+cp ./bin/linux/x64/pt ./upload/release-linux-x64.bin
+cp ./bin/mac/arm64/pt ./upload/release-darwin-arm64.bin
+cp ./bin/mac/x64/pt ./upload/release-darwin-x64.bin
+cp ./bin/win32/arm64/pt.exe ./upload/release-win32-arm64.bin
+cp ./bin/win32/x64/pt.exe ./upload/release-win32-x64.bin
+cp ./build.json ./upload/build.json
+
+rsync --progress ./upload/* zephyrheights:/pool/web/cdn/powertools/
+rm -rf ./upload
