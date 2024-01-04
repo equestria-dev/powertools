@@ -1,1 +1,1 @@
-global.BuildInfo = JSON.parse(`{"BUILD":238,"DATE":"2023-12-08T21:53:58.182Z","SOURCE_USER":"raindrops@Izzy-Moonbow.local","SOURCE_DIR":"/Volumes/Projects/powertools","VERSION":"20.7.0"}`);
+global.BuildInfo = JSON.parse(`{"BUILD":239,"DATE":"2024-01-01T21:13:21.942Z","SOURCE_USER":"raindrops@Izzy-Moonbow.local","SOURCE_DIR":"/Volumes/Projects/prj/powertools","VERSION":"20.7.0"}`);

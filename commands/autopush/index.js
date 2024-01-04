@@ -1,5 +1,10 @@
 const fs = require("node:fs");
+
 module.exports = () => {
+    if (fs.existsSync("./prj") && fs.lstatSync("./prj").isDirectory()) {
+        process.chdir("./prj");
+    }
+
     const child_process = require('node:child_process');
 
     function capitalizeFirstLetter(string) {
