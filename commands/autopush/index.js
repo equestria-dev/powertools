@@ -1,8 +1,8 @@
 const fs = require("node:fs");
 
 module.exports = () => {
-    if (fs.existsSync("./prj") && fs.lstatSync("./prj").isDirectory()) {
-        process.chdir("./prj");
+    if (fs.existsSync("/Volumes/Projects") && fs.lstatSync("/Volumes/Projects").isDirectory()) {
+        process.chdir("/Volumes/Projects");
     }
 
     const child_process = require('node:child_process');
