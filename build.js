@@ -1,1 +1,1 @@
-global.BuildInfo = JSON.parse(`{"BUILD":241,"DATE":"2024-01-22T15:08:55.545Z","SOURCE_USER":"raindrops@android-5.home","SOURCE_DIR":"/Volumes/Projects/powertools","VERSION":"20.7.0"}`);
+global.BuildInfo = JSON.parse(`{"BUILD":242,"DATE":"2024-01-22T15:10:43.549Z","SOURCE_USER":"raindrops@android-5.home","SOURCE_DIR":"/Volumes/Projects/powertools","VERSION":"20.7.0"}`);

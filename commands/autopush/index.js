@@ -51,7 +51,7 @@ module.exports = () => {
                     isDirectory = fs.lstatSync(fs.readlinkSync("./" + i)).isDirectory();
                 }
 
-                return !isDotFile && isDirectory;
+                return !isDotFile && isDirectory && (i !== "prj");
             } catch (e) {
                 return false;
             }
