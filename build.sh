@@ -29,5 +29,5 @@ cp ./bin/win32/arm64/pt.exe ./upload/release-win32-arm64.bin
 cp ./bin/win32/x64/pt.exe ./upload/release-win32-x64.bin
 cp ./build.json ./upload/build.json
 
-rsync --progress ./upload/* zephyrheights:/pool/web/cdn/powertools/
+rsync --progress ./upload/* dabssi:/pool/web/cdn/powertools/
 rm -rf ./upload

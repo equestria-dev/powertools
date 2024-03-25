@@ -170,6 +170,7 @@ module.exports = () => {
                             });
                         }
 
+                        process.stdout.moveCursor(0, -1); process.stdout.cursorTo(0); process.stdout.clearLine(null);
                         let response2 = null;
 
                         switch (response.value) {
@@ -188,6 +189,8 @@ module.exports = () => {
 
                             case "create":
                                 while (!response2 || Object.keys(response2).length === 0) {
+                                    process.stdout.moveCursor(0, -1); process.stdout.cursorTo(0); process.stdout.clearLine(null);
+
                                     response2 = await prompts({
                                         type: 'text',
                                         name: 'value',
@@ -229,6 +232,8 @@ module.exports = () => {
 
                             case "delete":
                                 while (!response2 || Object.keys(response2).length === 0) {
+                                    process.stdout.moveCursor(0, -1); process.stdout.cursorTo(0); process.stdout.clearLine(null);
+
                                     response2 = await prompts({
                                         type: 'confirm',
                                         name: 'value',
