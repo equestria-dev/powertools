@@ -1,1 +1,0 @@
-global.BuildInfo = JSON.parse(`{"BUILD":245,"DATE":"2024-03-25T19:35:24.516Z","SOURCE_USER":"raindrops@Izzy-Moonbow.local","SOURCE_DIR":"/Volumes/Projects/powertools","VERSION":"21.7.1"}`);

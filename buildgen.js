@@ -12,3 +12,4 @@ obj = {
 
 fs.writeFileSync("./build.js", "global.BuildInfo = JSON.parse(`" + JSON.stringify(obj).replaceAll("`", "\\`") + "`);");
 fs.writeFileSync("./build.json", JSON.stringify(obj));
+console.log(obj.BUILD);

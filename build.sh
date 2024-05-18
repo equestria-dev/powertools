@@ -1,6 +1,6 @@
 rm -rf ./bin
 
-node buildgen.js
+version=$(node buildgen.js)
 
 mkdir -p ./bin
 mkdir -p ./bin/linux/x64
@@ -31,3 +31,10 @@ cp ./build.json ./upload/build.json
 
 rsync --progress ./upload/* dabssi:/pool/web/cdn/powertools/
 rm -rf ./upload
+
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/linux/arm64/pt https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-linux-arm64
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/linux/x64/pt https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-linux-x64
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/mac/arm64/pt https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-darwin-arm64
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/mac/x64/pt https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-darwin-x64
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/win32/arm64/pt.exe https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-win32-arm64.exe
+curl -v --header "PRIVATE-TOKEN: $(cat ~/.deploy.txt)" --header "Content-Type: multipart/form-data" --upload-file ./bin/win32/x64/pt.exe https://source.equestria.dev/api/v4/projects/91/packages/generic/powertools/$version/pt-win32-x64.exe
