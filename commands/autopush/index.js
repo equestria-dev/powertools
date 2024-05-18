@@ -1,6 +1,4 @@
 const fs = require("node:fs");
-const {homedir} = require("node:os");
-const {execSync} = require("node:child_process");
 
 module.exports = () => {
     if (fs.existsSync("/Volumes/Projects") && fs.lstatSync("/Volumes/Projects").isDirectory()) {
@@ -13,144 +11,63 @@ module.exports = () => {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    function generateWithGemini(changes) {
-        const TOKEN = fs.readFileSync(homedir() + "/.gemini.txt").toString().trim();
-
-        console.log("");
-        let list = "";
-
-        for (let line of changes.replace(/ +/g, " ").split("\n")) {
-            let type = line.split(" ")[0];
-            let file = line.split(" ").slice(1).join(" ");
-            let typeString = "Affected?";
-
-            if (file.startsWith(".")) continue;
-
-            switch (type) {
-                case "M":
-                    typeString = "Modified";
-                    break;
-                case "T":
-                    typeString = "Type changed";
-                    break;
-                case "A":
-                    typeString = "Added";
-                    break;
-                case "D":
-                    typeString = "Deleted";
-                    break;
-                case "R":
-                    typeString = "Renamed";
-                    break;
-                case "C":
-                    typeString = "Copied";
-                    break;
-            }
-
-            list += typeString + ": " + file + "\n";
-        }
-
-        list = list.trim();
-
-        let prompt = "You are responsible for generating Git commit messages for a repository. " +
-            "Please reply to this message with only the Git commit message " +
-            "(which needs to be only a single sentence, while being short and concise but not too vague). " +
-            "Do not leave any placeholder text or anything else that would require modification afterward. " +
-            "Do not use Title Case. " +
-            "Mention ALL of the changes and don't use any standard format (no 'feat:'). " +
-            "Make sure to only mention facts and not make up changes that are not real. " +
-            "If you are unsure about a change, just mention the file itself (e.g. 'Modified test.json'). " +
-            "No issue/tracking number is expected.\n\n" +
-            "Here is a list of the changed files:\n\n" + list;
-
-        let data = {
-            contents: [{
-                parts: [{
-                    text: prompt
-                }]
-            }]
-        }
-
-        let remote = 'async function remote() {\n' +
-            '            let res = await (await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + TOKEN, {\n' +
-            '                method: "POST",\n' +
-            '                headers: {\n' +
-            "                    'Content-Type': 'application/json'\n" +
-            '                },\n' +
-            '                body: JSON.stringify(data)\n' +
-            '            })).json();\n' +
-            '\n' +
-            '            console.log(res["candidates"][0]["content"]["parts"][0]["text"]);\n' +
-            '        }';
-
-        fs.writeFileSync(homedir() + "/.gemini.tmp", "const TOKEN = \"" + TOKEN + "\"; const data = JSON.parse(Buffer.from(`" + Buffer.from(JSON.stringify(data)).toString("base64") + "`, `base64`));\n\n" + remote + "\n\nremote();");
-        execSync(`cat "${homedir() + "/.gemini.tmp"}" | ssh koshy 'tee /tmp/payload.txt >/dev/null && node /tmp/payload.txt && rm /tmp/payload.txt'`, { stdio: "inherit" });
-        fs.unlinkSync(homedir() + "/.gemini.tmp");
-
-        return changes + " (automated, AI-generated commit message)";
-    }
-
     function getCommitMessage(changes) {
-        try {
-            generateWithGemini(changes);
-        } catch (e) {
-            let changed = changes.split("\n").map(i => i.trim().replace(/ +/g, " ").split(" ")[0].substring(0, 1));
-            let amounts = {};
+        let changed = changes.split("\n").map(i => i.trim().replace(/ +/g, " ").split(" ")[0].substring(0, 1));
+        let amounts = {};
 
-            for (let change of changed) {
-                if (!amounts[change]) amounts[change] = 0;
-                amounts[change] += 1;
-            }
+        for (let change of changed) {
+            if (!amounts[change]) amounts[change] = 0;
+            amounts[change] += 1;
+        }
 
-            let message = "";
-            let parts = [];
-            let firstPart = true;
+        let message = "";
+        let parts = [];
+        let firstPart = true;
 
-            for (let action of [
-                { code: "M", name: "updated" },
-                { code: "T", name: "changed type for" },
-                { code: "A", name: "added" },
-                { code: "D", name: "deleted" },
-                { code: "R", name: "renamed" },
-                { code: "C", name: "copied" },
-            ]) {
-                if (amounts[action.code]) {
-                    if (amounts[action.code] > 1) {
-                        if (firstPart) {
-                            firstPart = false;
-                            parts.push(capitalizeFirstLetter(action.name) + " " + amounts[action.code] + " files");
-                        } else {
-                            parts.push(action.name + " " + amounts[action.code] + " files");
-                        }
+        for (let action of [
+            { code: "M", name: "updated" },
+            { code: "T", name: "changed type for" },
+            { code: "A", name: "added" },
+            { code: "D", name: "deleted" },
+            { code: "R", name: "renamed" },
+            { code: "C", name: "copied" },
+        ]) {
+            if (amounts[action.code]) {
+                if (amounts[action.code] > 1) {
+                    if (firstPart) {
+                        firstPart = false;
+                        parts.push(capitalizeFirstLetter(action.name) + " " + amounts[action.code] + " files");
                     } else {
-                        let fileName = changes.split("\n").filter(i => i.startsWith(action.code))[0].trim().replace(/ +/g, " ").split(" ")[1];
+                        parts.push(action.name + " " + amounts[action.code] + " files");
+                    }
+                } else {
+                    let fileName = changes.split("\n").filter(i => i.startsWith(action.code))[0].trim().replace(/ +/g, " ").split(" ")[1];
 
-                        if (firstPart) {
-                            firstPart = false;
-                            parts.push(capitalizeFirstLetter(action.name) + " " + fileName);
-                        } else {
-                            parts.push(action.name + " " + fileName);
-                        }
+                    if (firstPart) {
+                        firstPart = false;
+                        parts.push(capitalizeFirstLetter(action.name) + " " + fileName);
+                    } else {
+                        parts.push(action.name + " " + fileName);
                     }
                 }
             }
+        }
 
-            let index = 0;
+        let index = 0;
 
-            for (let part of parts) {
-                if (index === 0) {
-                    message += part;
-                } else if (index >= parts.length - 1) {
-                    message += " and " + part;
-                } else {
-                    message += ", " + part;
-                }
-
-                index++;
+        for (let part of parts) {
+            if (index === 0) {
+                message += part;
+            } else if (index >= parts.length - 1) {
+                message += " and " + part;
+            } else {
+                message += ", " + part;
             }
 
-            return message + " (automated)";
+            index++;
         }
+
+        return message;
     }
 
     function exec(name, args, options) {
