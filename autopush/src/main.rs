@@ -116,5 +116,8 @@ fn main() {
 
     if let Err(err) = run(source) {
         error!("An error has occurred: {err:?}. Unable to continue.");
+    } else {
+        info!("------------------------------------");
+        info!("Autopush has completed successfully.");
     }
 }
