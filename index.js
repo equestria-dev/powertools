@@ -1,4 +1,4 @@
-require('./build');
+require('./build.json');
 const chalk = require('chalk');
 const commands = require("./commands/_loader");
 
@@ -13,6 +13,8 @@ try {
 } catch (e) {
     console.log(chalk.yellow("Warning:") + " GNU Wget is not installed, some features (such as over-the-air updates) will not be functional.");
 }
+
+console.log(chalk.yellow("Warning:") + " JavaScript-based Power Tools are now deprecated. Please check https://github.com/equestria-dev/powertools for the Rust version.");
 
 require('./updater')().then(() => {
     let command = process.argv[2];

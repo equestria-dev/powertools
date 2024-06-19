@@ -1,11 +1,20 @@
 const fs = require("node:fs");
+const commandExists = require('command-exists');
+const chalk = require("chalk");
+const child_process = require('node:child_process');
 
-module.exports = () => {
+module.exports = async () => {
+    if (await commandExists("autopush")) {
+        console.log(chalk.cyan("Note:") + " Found Rust-based 'autopush' in $PATH, using the Rust version instead.");
+        try {
+            child_process.execFileSync("autopush", process.argv.slice(2), { stdio: "inherit" });
+        } catch (e) {}
+        return;
+    }
+
     if (fs.existsSync("/Volumes/Projects") && fs.lstatSync("/Volumes/Projects").isDirectory()) {
         process.chdir("/Volumes/Projects");
     }
-
-    const child_process = require('node:child_process');
 
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
