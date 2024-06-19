@@ -1,3 +1,4 @@
+
 use std::{fs, io};
 use std::path::Path;
 use std::process::Command;
@@ -5,26 +6,9 @@ use log::{debug, error, info, warn};
 use simple_logger::SimpleLogger;
 use std::str;
 use std::str::Utf8Error;
+use autopush::{file_is_project, has_changes, make_commit, push_project, track_changes};
 
-#[derive(Debug)]
-#[allow(dead_code)] // Since AutopushError implements Debug
-enum AutopushError {
-    IO(io::Error),
-    Utf8(Utf8Error),
-    Git(String)
-}
-
-impl From<Utf8Error> for AutopushError {
-    fn from(value: Utf8Error) -> Self {
-        Self::Utf8(value)
-    }
-}
-
-impl From<io::Error> for AutopushError {
-    fn from(value: io::Error) -> Self {
-        Self::IO(value)
-    }
-}
+use autopush::error::AutopushError;
 
 fn run(source: &str) -> Result<(), AutopushError> {
     let directory = fs::read_dir(&source)?;
@@ -34,11 +18,7 @@ fn run(source: &str) -> Result<(), AutopushError> {
         let project_file_name = project.file_name();
         let project_name = project_file_name.to_str().unwrap();
 
-        if project.file_name()
-            .to_str().unwrap()
-            .starts_with(".") ||
-            !project.file_type()
-                .unwrap().is_dir() {
+        if !file_is_project(&project)? {
             continue;
         }
 
@@ -54,13 +34,7 @@ fn run(source: &str) -> Result<(), AutopushError> {
         }
 
         debug!("{project_name}: Checking for changes");
-        let status = Command::new("git")
-            .args(["status", "--porcelain"])
-            .current_dir(project.path())
-            .output()?;
-        let status = str::from_utf8(status
-            .stdout.as_slice())?;
-        if status.trim().len() < 1 {
+        if has_changes(&project)? {
             info!("{project_name}: No changes to commit");
             continue;
         } else {
@@ -68,31 +42,13 @@ fn run(source: &str) -> Result<(), AutopushError> {
         }
 
         info!("{project_name}: Tracking files");
-        let status = Command::new("git")
-            .args(["add", "-A"])
-            .current_dir(project.path())
-            .status()?;
-        if !status.success() {
-            return Err(AutopushError::Git(String::from("Unable to track files (git add).")));
-        }
+        track_changes(&project)?;
 
         info!("{project_name}: Making commit");
-        let status = Command::new("git")
-            .args(["commit"])
-            .current_dir(project.path())
-            .status()?;
-        if !status.success() {
-            return Err(AutopushError::Git(String::from("Unable to make commit (git commit).")));
-        }
+        make_commit(&project)?;
 
         info!("{project_name}: Pushing to remote");
-        let status = Command::new("git")
-            .args(["push", "--all", "origin"])
-            .current_dir(project.path())
-            .status()?;
-        if !status.success() {
-            return Err(AutopushError::Git(String::from("Unable to push to remote (git push).")));
-        }
+        push_project(&project)?;
 
         info!("{project_name}: Completed!");
     }
