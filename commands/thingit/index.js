@@ -28,13 +28,14 @@ function prettySize(s) {
 }
 
 module.exports = async () => {
-    if (await commandExists("thingit")) {
+    try {
+        await commandExists("thingit");
         console.log(chalk.cyan("Note:") + " Found Rust-based 'thingit' in $PATH, using the Rust version instead.");
         try {
             child_process.execFileSync("thingit", process.argv.slice(2), { stdio: "inherit" });
         } catch (e) {}
         return;
-    }
+    } catch (e) {}
 
     if (process.platform !== "darwin" && process.platform !== "linux") {
         console.log("Sorry, this program only works on macOS and Linux.");

@@ -4,13 +4,14 @@ const chalk = require("chalk");
 const child_process = require('node:child_process');
 
 module.exports = async () => {
-    if (await commandExists("autopush")) {
+    try {
+        await commandExists("autopush");
         console.log(chalk.cyan("Note:") + " Found Rust-based 'autopush' in $PATH, using the Rust version instead.");
         try {
             child_process.execFileSync("autopush", process.argv.slice(2), { stdio: "inherit" });
         } catch (e) {}
         return;
-    }
+    } catch (e) {}
 
     if (fs.existsSync("/Volumes/Projects") && fs.lstatSync("/Volumes/Projects").isDirectory()) {
         process.chdir("/Volumes/Projects");
