@@ -1,4 +1,4 @@
-require('./build.json');
+require('./build');
 const chalk = require('chalk');
 const commands = require("./commands/_loader");
 
