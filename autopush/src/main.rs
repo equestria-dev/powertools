@@ -1,11 +1,9 @@
 
-use std::{fs, io};
+use std::fs;
 use std::path::Path;
-use std::process::Command;
 use log::{debug, error, info, warn};
 use simple_logger::SimpleLogger;
 use std::str;
-use std::str::Utf8Error;
 use autopush::{file_is_project, has_changes, make_commit, push_project, track_changes};
 
 use autopush::error::AutopushError;
