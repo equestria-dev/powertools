@@ -1,5 +1,1 @@
-bin
-commands/musicdl
-upload
-build.js
-build.json
+target

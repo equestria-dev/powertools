@@ -1,0 +1,3 @@
+[workspace]
+members = ["autopush", "thingit"]
+resolver = "2"
