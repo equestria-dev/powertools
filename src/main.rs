@@ -58,7 +58,7 @@ fn main() {
         .init()
         .unwrap();
 
-    info!("Autopush version {}; part of Equestria.dev Power Tools", env!("CARGO_PKG_VERSION"));
+    info!("Autopush Standalone version {}", env!("CARGO_PKG_VERSION"));
     let source = if Path::new("/Volumes/Projects").exists() {
         "/Volumes/Projects"
     } else {
